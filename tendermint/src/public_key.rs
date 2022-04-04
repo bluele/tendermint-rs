@@ -15,7 +15,6 @@ use crate::{error::Error, signature::Signature};
 use core::convert::TryFrom;
 use core::{cmp::Ordering, fmt, ops::Deref, str::FromStr};
 use serde::{de, ser, Deserialize, Deserializer, Serialize};
-use signature::Verifier as _;
 use subtle_encoding::{base64, bech32, hex};
 use tendermint_proto::crypto::public_key::Sum;
 use tendermint_proto::crypto::PublicKey as RawPublicKey;
@@ -196,7 +195,7 @@ impl PublicKey {
     pub fn verify(&self, msg: &[u8], signature: &Signature) -> Result<(), Error> {
         match self {
             PublicKey::Ed25519(pk) => {
-                match ed25519_dalek::Signature::try_from(signature.as_bytes()) {
+                match ed25519_dalek::Signature::from_bytes(signature.as_bytes()) {
                     Ok(sig) => pk.verify(msg, &sig).map_err(|_| {
                         Error::signature_invalid(
                             "Ed25519 signature verification failed".to_string(),
